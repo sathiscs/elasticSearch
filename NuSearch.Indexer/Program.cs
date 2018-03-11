@@ -29,9 +29,25 @@ namespace NuSearch.Indexer
 			DumpReader = new NugetDumpReader(@"C:\work\ElasticSearch\NugetDump");
 			CurrentIndexName = NuSearchConfiguration.CreateIndexName();
 
-			CreateIndex();
+			var packages = DumpReader.Dumps.Take(1).First().NugetPackages;
+
+			foreach (var package in packages)
+			{
+				var result = Client.Index(package);
+
+				if (!result.IsValid)
+				{
+					Console.WriteLine(result.DebugInformation);
+					Console.Read();
+					Environment.Exit(1);
+				}
+				Console.WriteLine("Done.");
+			}
+
+
+			//CreateIndex();
 			IndexDumps();
-			SwapAlias();
+			//SwapAlias();
 
 			Console.Read();
 		}
@@ -44,7 +60,6 @@ namespace NuSearch.Indexer
 
 		static void CreateIndex()
 		{
-			Client.Index();
 			Client.CreateIndex(CurrentIndexName, i => i
 				.Settings(s => s
 					.NumberOfShards(2)
@@ -125,7 +140,8 @@ namespace NuSearch.Indexer
 		static void IndexDumps()
 		{
 			Console.WriteLine("Setting up a lazy xml files reader that yields packages...");
-			var packages = DumpReader.GetPackages();
+			//var packages = DumpReader.GetPackages();
+			var packages = DumpReader.Dumps.Take(1).First().NugetPackages;
 
 			Console.WriteLine("Indexing documents into elasticsearch...");
 			var waitHandle = new CountdownEvent(1);
