@@ -44,7 +44,7 @@ namespace NuSearch.Indexer
 
 		static void CreateIndex()
 		{
-			Client.Index()
+			Client.Index();
 			Client.CreateIndex(CurrentIndexName, i => i
 				.Settings(s => s
 					.NumberOfShards(2)
